@@ -97,6 +97,7 @@ class SongResources(Resource):
     def delete(self,song_id):
         song_from_db = Song.query.get_or_404(song_id)
         db.session.delete(song_from_db)
+        db.session.commit()
         return '',204
 
 # Routes
