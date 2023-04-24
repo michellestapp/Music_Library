@@ -57,10 +57,10 @@ songs_schema = SongSchema(many = True)
 # Resources
 class SongListResources(Resource):
 
-    def get():
-        all_songs = 
-        pass
-
+    def get(self):
+        all_songs = Song.query.all()
+        return song_schema.dump(all_songs)
+    
     def post():
         pass
 
@@ -69,3 +69,5 @@ class SongListResources(Resource):
 
 
 # Routes
+
+api.add_resource(SongListResources, '/api/music_library')
