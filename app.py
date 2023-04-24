@@ -25,18 +25,19 @@ Migrate(app, db)
 
 # Models
 class Song(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    title = db.Column(db.String, nullable = False)
-    artist = db.Column(db.String, nullable = False)
-    album = db.Column(db.String)
+    song_id = db.Column(db.Integer, primary_key = True)
+    title = db.Column(db.String(255), nullable = False)
+    artist = db.Column(db.String(255), nullable = False)
+    album = db.Column(db.String(255))
     release_date = db.Column(db.Date)
-    genre = db.Column(db.String)
+    genre = db.Column(db.String(255))
 
-
+    def __repr__(self):
+        return f'{self.title} {self.artist} {self.album} {self.release_date} {self.genre}'
 
 # Schemas
 class SongSchema(ma.Schema):
-    id = fields.Integer(primary_key = True)
+    song_id = fields.Integer(primary_key = True)
     title = fields.String(required = True)
     artist = fields.String(required=True)
     album = fields.String()
@@ -59,15 +60,23 @@ class SongListResources(Resource):
 
     def get(self):
         all_songs = Song.query.all()
-        return song_schema.dump(all_songs)
+        return songs_schema.dump(all_songs),200
     
-    def post():
-        pass
+    def post(self):
+        form_data = request.get_json()
+        try:
+            new_song = song_schema.load(form_data)
+            db.session.add(new_song)
+            db.session.commit()
+            return song_schema.dump(new_song), 201
+        except ValidationError as err:
+            return err.messages,400
 
-
-
-
+class SongResources(Resource):
+    def get(self,song_id):
+        song_from_db = Song.query.get_or_404(song_id)
+        return song_schema.dump(song_id)
 
 # Routes
 
-api.add_resource(SongListResources, '/api/music_library')
+api.add_resource(SongListResources, '/api/songs')
