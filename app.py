@@ -24,7 +24,7 @@ CORS(app)
 Migrate(app, db)
 
 # Models
-class Music(db.Model):
+class Song(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     title = db.Column(db.String, nullable = False)
     artist = db.Column(db.String, nullable = False)
@@ -35,7 +35,7 @@ class Music(db.Model):
 
 
 # Schemas
-class MusicSchema(ma.Schema):
+class SongSchema(ma.Schema):
     id = fields.Integer(primary_key = True)
     title = fields.String(required = True)
     artist = fields.String(required=True)
@@ -45,16 +45,26 @@ class MusicSchema(ma.Schema):
 
     @post_load
     def create(self, data, **kwargs):
-        return Music(**data)
+        return Song(**data)
 
     class Meta:
         fields = ("id","title","artist","album","release_date","genre")
     
-music_schema = MusicSchema()
-musics_schema = MusicSchema(many = True)
+song_schema = SongSchema()
+songs_schema = SongSchema(many = True)
 
 
 # Resources
+class SongListResources(Resource):
+
+    def get():
+        all_songs = 
+        pass
+
+    def post():
+        pass
+
+
 
 
 
