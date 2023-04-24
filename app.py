@@ -6,6 +6,7 @@ from flask_migrate import Migrate
 from flask_restful import Api, Resource
 from dotenv import load_dotenv
 from os import environ
+from marshmallow import post_load, fields, ValidationError
 
 load_dotenv()
 
@@ -30,11 +31,27 @@ class Music(db.Model):
     album = db.Column(db.String)
     release_date = db.Column(db.Date)
     genre = db.Column(db.String)
-    
+
 
 
 # Schemas
+class MusicSchema(ma.Schema):
+    id = fields.Integer(primary_key = True)
+    title = fields.String(required = True)
+    artist = fields.String(required=True)
+    album = fields.String()
+    release_date = fields.Date()
+    genre = fields.String()
 
+    @post_load
+    def create(self, data, **kwargs):
+        return Music(**data)
+
+    class Meta:
+        fields = ("id","title","artist","album","release_date","genre")
+    
+music_schema = MusicSchema()
+musics_schema = MusicSchema(many = True)
 
 
 # Resources
