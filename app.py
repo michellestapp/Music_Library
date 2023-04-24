@@ -75,8 +75,9 @@ class SongListResources(Resource):
 class SongResources(Resource):
     def get(self,song_id):
         song_from_db = Song.query.get_or_404(song_id)
-        return song_schema.dump(song_id)
+        return song_schema.dump(song_from_db), 
 
 # Routes
 
 api.add_resource(SongListResources, '/api/songs')
+api.add_resource(SongResources, '/api/songs/<song_id>')
