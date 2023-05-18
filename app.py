@@ -61,8 +61,24 @@ songs_schema = SongSchema(many = True)
 class SongListResources(Resource):
 
     def get(self):
+        custom_response = {}
+        total_run_time = int()
+
         all_songs = Song.query.all()
-        return songs_schema.dump(all_songs),200
+
+        for item in all_songs:
+            total_run_time += item.run_time
+            
+        total_run_time = round(total_run_time/60,2)
+        print(total_run_time)
+
+        custom_response = {
+            "songs": songs_schema.dump(all_songs),
+            "total_run_time": total_run_time
+        }
+
+
+        return custom_response,200
     
     def post(self):
         form_data = request.get_json()
@@ -92,6 +108,8 @@ class SongResources(Resource):
             song_from_db.release_date = request.json['release_date']
         if 'genre' in request.json:
             song_from_db.genre = request.json['genre']
+        if 'run_time' in request.json:
+            song_from_db.run_time = request.json['run_time']
 
         db.session.commit()
         return song_schema.dump(song_id), 200
