@@ -34,7 +34,7 @@ class Song(db.Model):
     run_time = db.Column(db.Integer)
 
     def __repr__(self):
-        return f'{self.title} {self.artist} {self.album} {self.release_date} {self.genre}'
+        return f' {self.song_id} {self.title} {self.artist} {self.album} {self.release_date} {self.genre}'
 
 # Schemas
 class SongSchema(ma.Schema):
@@ -51,7 +51,7 @@ class SongSchema(ma.Schema):
         return Song(**data)
 
     class Meta:
-        fields = ("id","title","artist","album","release_date","genre","run_time")
+        fields = ("song_id","title","artist","album","release_date","genre","run_time")
     
 song_schema = SongSchema()
 songs_schema = SongSchema(many = True)
@@ -62,7 +62,7 @@ class SongListResources(Resource):
 
     def get(self):
         custom_response = {}
-        total_run_time = int()
+        total_run_time = 0
 
         all_songs = Song.query.all()
 
