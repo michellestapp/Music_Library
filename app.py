@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, json
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
@@ -7,6 +7,7 @@ from flask_restful import Api, Resource
 from dotenv import load_dotenv
 from os import environ
 from marshmallow import post_load, fields, ValidationError
+
 
 load_dotenv()
 
@@ -32,6 +33,7 @@ class Song(db.Model):
     release_date = db.Column(db.Date)
     genre = db.Column(db.String(255))
     run_time = db.Column(db.Integer)
+    song_file = db.Column(db.LargeBinary)
 
     def __repr__(self):
         return f' {self.song_id} {self.title} {self.artist} {self.album} {self.release_date} {self.genre}'
@@ -45,13 +47,14 @@ class SongSchema(ma.Schema):
     release_date = fields.Date()
     genre = fields.String()
     run_time = fields.Integer()
+    song_file = fields.Raw() 
 
     @post_load
     def create(self, data, **kwargs):
         return Song(**data)
 
     class Meta:
-        fields = ("song_id","title","artist","album","release_date","genre","run_time")
+        fields = ("song_id","title","artist","album","release_date","genre","run_time", "song_file")
     
 song_schema = SongSchema()
 songs_schema = SongSchema(many = True)
@@ -63,18 +66,21 @@ class SongListResources(Resource):
     def get(self):
         custom_response = {}
         total_run_time = 0
+        total_run_time_seconds = 0
 
         all_songs = Song.query.all()
 
         for item in all_songs:
             total_run_time += item.run_time
             
-        total_run_time = round(total_run_time/60,2)
+        # total_run_time = round(total_run_time/60,2)
         print(total_run_time)
+
+        total_run_time_formatted = f"{total_run_time // 60} min {total_run_time % 60} sec"
 
         custom_response = {
             "songs": songs_schema.dump(all_songs),
-            "total_run_time": total_run_time
+            "total_run_time_formatted": total_run_time_formatted  
         }
 
 
@@ -119,6 +125,24 @@ class SongResources(Resource):
         db.session.delete(song_from_db)
         db.session.commit()
         return '',204
+    
+    def post(self):
+        form_data = request.form 
+        song_data = json.loads(form_data['data'])
+
+        if 'song_file' not in request.files:
+            return {"message": "No file part"}, 400
+
+        file = request.files['song_file']
+        try:
+            new_song = song_schema.load(song_data)
+            new_song.song_file = file.read()
+            db.session.add(new_song)
+            db.session.commit()
+            return song_schema.dump(new_song), 201
+        except ValidationError as err:
+            return err.messages, 400
+
 
 # Routes
 
